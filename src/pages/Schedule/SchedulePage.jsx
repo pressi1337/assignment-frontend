@@ -1,19 +1,38 @@
 import { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+// import DatePicker from "react-datepicker";
+// import "react-datepicker/dist/react-datepicker.css";
+import { getEmployees } from "../../services/api";
 
 export default function SchedulePage() {
-  const [employees, setEmployees] = useState([
-    { id: 1, name: "TEST 1" },
-    { id: 2, name: "TEST 2" },
-    { id: 3, name: "TEST 3" },
-  ]);
+  const [employees, setEmployees] = useState([]);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
-  const [scheduleDate, setScheduleDate] = useState(null);
+  const [date, setDate] = useState(null);
+  const [time, setTime] = useState(null);
   const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const data = await getEmployees();
+      setEmployees(data);
+    };
+    fetchEmployees();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let payload = {
+      employeeIds: selectedEmployees,
+      data,
+      time,
+      comment,
+    };
+
+    try {
+      await createSchedule(payload);
+      alert("Schedule created successfully.");
+    } catch (err) {
+      alert("Failed to create schedule.");
+    }
   };
 
   const toggleEmployeeSelection = (id) => {
@@ -61,15 +80,18 @@ export default function SchedulePage() {
           <label className="block text-lg font-medium text-gray-700 mb-2">
             Schedule Date:
           </label>
-          <DatePicker
-            selected={scheduleDate}
-            onChange={(date) => setScheduleDate(date)}
-            showTimeSelect
-            timeFormat="HH:mm"
-            timeIntervals={15}
-            dateFormat="MMMM d, yyyy h:mm aa"
-            minDate={new Date()}
-            className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+          <input
+            type="date"
+            className="block w-full p-2 border mb-4"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            min={new Date().toISOString().split("T")[0]}
+          />
+          <input
+            type="time"
+            className="block w-full p-2 border mb-4"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
           />
         </div>
 
